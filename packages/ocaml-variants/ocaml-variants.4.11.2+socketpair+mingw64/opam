@@ -1,0 +1,41 @@
+opam-version: "2.0"
+synopsis: "OCaml 4.11 + socketpair (mingw64)"
+maintainer: "platform@lists.ocaml.org"
+authors: "Xavier Leroy and many contributors"
+homepage: "https://ocaml.org"
+bug-reports: "https://github.com/ocaml/ocaml/issues"
+dev-repo: "git://github.com/ocaml/ocaml"
+depends: [
+  "ocaml" {= "4.11.2" & post}
+  "base-unix" {post}
+  "base-bigarray" {post}
+  "base-threads" {post}
+]
+conflict-class: "ocaml-core-compiler"
+flags: compiler
+setenv: [
+  [OCAMLLIB = "%{prefix}%/lib/ocaml"]
+  [CAML_LD_LIBRARY_PATH = "%{lib}%/stublibs"]
+  [CC = "x86_64-w64-mingw32-gcc.exe"]
+  [CPP = "x86_64-w64-mingw32-cpp.exe"]
+]
+build: [
+  ["./configure" "--prefix=%{prefix}%" "--host=x86_64-w64-mingw32" "CC=x86_64-w64-mingw32-gcc" "CPP=x86_64-w64-mingw32-cpp"]
+  [make "SHELL=/bin/dash" "flexdll"]
+  [make "SHELL=/bin/dash" "-j%{jobs}%" "world.opt"]
+  [make "SHELL=/bin/dash" "flexlink.opt"]
+]
+install: [
+  [make "SHELL=/bin/dash" "install"]
+  ["dash" "-exc" "echo \"%{lib}%/stublibs\"  >> \"%{lib}%/ocaml/ld.conf\""]
+]
+patches: ["inline-flexdll.patch"]
+url {
+  src: "https://github.com/MisterDA/ocaml/archive/4.11-fdopen-socketpair.tar.gz"
+  checksum: "sha512=260b97305e182280baeac95efd4af9dee46a4e7c1925bc94e05d9cf6052e26ec31dfee7ad33dcbaddae3c3861c4a441d746fe9fd63a81e9ea9202588b9d1a724"
+}
+extra-source "inline-flexdll.patch" {
+  src:
+    "https://gist.githubusercontent.com/fdopen/ae5f9fda488146f6698c17735cd3b738/raw/f310ccd325a57026e60ecbe67808a94e26d90197/inline-flexdll.patch"
+  checksum: "sha512=1ddcc1935158d5f2b1bef88350c61fd07098c4434a87261bbb3f7330abf337efe3b2278d17d2a59c5fc216e861dffe5cd199b4e9612e1739288fcb752b7c8a7d"
+}
